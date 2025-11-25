@@ -1,7 +1,6 @@
 # OpenStorPlugin
 
 
-
 ## Features
 
 TODO
@@ -11,14 +10,13 @@ TODO
 ```bash
 pip install openstoreplugin
 ```
-
 ## Usage
 
 TODO
 
 ## License 
 
-The project is under the MIT License.
+The project is released under the MIT License.
 
 ## Project Status
 

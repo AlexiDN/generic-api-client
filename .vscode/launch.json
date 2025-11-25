@@ -1,0 +1,18 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Python: Current File",
+            "type": "debugpy",
+            "request": "launch",
+            "python": "${workspaceFolder}/.venv/bin/python",
+            "program": "${file}",
+            "console": "integratedTerminal",
+            "env": {
+                "PYTHONPATH":"${workspaceFolder}/src:${workspaceFolder}:${workspaceFolder}/tests"
+            },
+            "envFile": "${workspaceFolder}/.env",
+            "sudo": true
+        },
+    ]
+}
