@@ -8,18 +8,17 @@ readme = "README.md"
 description = "A library to base your controller plugins for Open Store"
 authors = [{name="Alexi Desvignes Nouvel"}]
 keywords = [ "open", "openstore","store","openstoreplugin","plugin" ]
+requires-python=">=3.10"
+dynamic=["dependencies"]
 
 [project.urls]
 repository = "https://github.com/AlexiDN/openstoreplugin"
 documentation = "https://github.com/AlexiDN/openstoreplugin/wiki"
 
-
-
 # Common dependencies
 [tool.poetry.dependencies]
-python = ">=3.10"
 pydantic = "^2.11.4"
-jinja2 = "^3.1.6"
+docker = "^7.1.0"
 
 [tool.poetry.group.lint.dependencies]
 ruff = "^0.11.9"
@@ -35,7 +34,7 @@ pythonpath = ["src", "tests"]
 [tool.ruff]
 src = ["src"]
 exclude = [".cache"]
-extend-exclude = ["tests"]
+extend-exclude = []
 line-length = 120
 indent-width = 4
 
