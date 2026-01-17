@@ -130,15 +130,15 @@ class APIConectorInterface:
         May be overriden by subclass.
         """
 
-    def _inject_auth(self, prepared_request: Request) -> Request:  # noqa: PLR6301
+    def _inject_auth(self, prepared_request: Request) -> Request:
         """Inject auth data into an prepared request. May be overriden by subclass."""
         return prepared_request
 
-    def _inject_version(self, prepared_request: Request) -> Request:  # noqa: PLR6301
+    def _inject_version(self, prepared_request: Request) -> Request:
         """Inject version data into an prepared request. May be overriden by subclass."""
         return prepared_request
 
-    def _format_response(self, res: Response) -> Response:  # noqa: PLR6301
+    def _format_response(self, res: Response) -> Response:
         """Format the Response object returned by the target. May be overriden by subclass.</br>
         Any treatment specific to an API response can be done here.</br>
         For example you can extract from res.json only the data that matters for the request
