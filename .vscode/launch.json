@@ -12,7 +12,8 @@
                 "PYTHONPATH":"${workspaceFolder}/src:${workspaceFolder}:${workspaceFolder}/tests"
             },
             "envFile": "${workspaceFolder}/.env",
-            "sudo": true
+            "sudo": true,
+            "justMyCode": false
         },
     ]
 }

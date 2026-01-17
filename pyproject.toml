@@ -1,24 +1,31 @@
 [tool.poetry]
-packages = [{ include = "openstoreplugin", from = "src" }]
+packages = [{ include = "generic_api_client", from = "src" }]
 
 [project]
-name = "openstoreplugin"
+name = "generic-api-client"
 version = "0.0.1"
 readme = "README.md"
-description = "A library to base your controller plugins for Open Store"
+description = "Interact with APIs through methods and pydantic models"
 authors = [{name="Alexi Desvignes Nouvel"}]
-keywords = [ "open", "openstore","store","openstoreplugin","plugin" ]
+keywords = [ "open", "api","client","generic","rest" ]
 requires-python=">=3.10"
 dynamic=["dependencies"]
 
-[project.urls]
-repository = "https://github.com/AlexiDN/openstoreplugin"
-documentation = "https://github.com/AlexiDN/openstoreplugin/wiki"
+# [project.urls]
+# repository = "https://github.com/AlexiDN/openstoreplugin"
+# documentation = "https://github.com/AlexiDN/openstoreplugin/wiki"
 
 # Common dependencies
 [tool.poetry.dependencies]
+python= ">=3.10,<4.0"
 pydantic = "^2.11.4"
 docker = "^7.1.0"
+requests = "^2.32.5"
+semver = "^3.0.4"
+jinja2 = "^3.1.6"
+redis = "^7.1.0"
+treelib = "^1.8.0"
+
 
 [tool.poetry.group.lint.dependencies]
 ruff = "^0.11.9"

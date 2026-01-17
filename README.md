@@ -1,5 +1,6 @@
-# OpenStorPlugin
+# Generic API Client
 
+Interact with APIs through methods and pydantic models.
 
 ## Features
 
@@ -8,7 +9,7 @@ TODO
 ## Installation
 
 ```bash
-pip install openstoreplugin
+pip install generic_api_client
 ```
 ## Usage
 
