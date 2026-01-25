@@ -1,9 +1,13 @@
+# ruff: noqa: ARG002
 from contextvars import Token
 from http import HTTPMethod
 from pathlib import Path
-from typing import ClassVar
+from time import sleep
+from typing import Any, ClassVar, Self
 from pydantic import BaseModel
-from requests import Response as RequestsResponse, request
+from requests import Response as RequestsResponse, request as requests_request
+
+from generic_api_client.exceptions import RequestError
 from .models.authentication import Credentials
 from .models.requests import Request, Response
 from .models.api import APICommonRequestFields
@@ -27,7 +31,7 @@ class APIConectorInterface:
     target: Target | None = None
 
     # CONSTRUCTOR
-    def __new__(cls) -> "APIConectorInterface":
+    def __new__(cls) -> Self:
         """Verify that the class implementation is correct before building an instance."""
         if not hasattr(cls, "api_common_requests_fields"):
             msg = f"Can't instantiate {cls} because api_common_requests_fields field needs to be defined."
@@ -69,7 +73,11 @@ class APIConectorInterface:
             msg = f"Can't execute required 'load_version' because the task where not found. Exc:{err}"
             raise RuntimeError(msg) from err
 
-    def execute_request(self, template_path: str, task_args: BaseModel | None = None) -> Response:
+    def execute_request(
+        self,
+        template_path: str,
+        request_args: BaseModel | dict[str, Any] | list[BaseModel | dict[str, Any]] | None = None,
+    ) -> Response:
         """Execute a request base on a template name"""
         # Verify that the target was defined before
         if not self.target:
@@ -89,9 +97,10 @@ class APIConectorInterface:
             data=self.api_common_requests_fields.data,
             json=self.api_common_requests_fields.json,
         )
+        # evaluate the template
         request_template = self.template_service.get_request_template(
             template_path,
-            task_args.model_dump(mode="json", by_alias=True, exclude_unset=True) if task_args else {},
+            self._convert_request_args(request_args),
         )
         # Execute login if required
         if self.api_common_requests_fields.requires_login and request_template.requires_auth and not self.api_auth_data:
@@ -113,10 +122,7 @@ class APIConectorInterface:
         prepared_request = self.template_service.build_request_from_request_template(
             request_template, prepared_request, self.version
         )
-        # Send request
-        res = request(**prepared_request.model_dump(mode="json", exclude_none=True))  # noqa: S113 (False positive)
-        # Convert to Response Model
-        return self._extract_res_model_from_api_response(res)
+        return self._execute_request_with_retries(prepared_request)
 
     # PRIVATE METHODS
 
@@ -138,12 +144,52 @@ class APIConectorInterface:
         """Inject version data into an prepared request. May be overriden by subclass."""
         return prepared_request
 
-    def _format_response(self, res: Response) -> Response:
-        """Format the Response object returned by the target. May be overriden by subclass.</br>
+    def _proccess_response(self, res: Response) -> Response:
+        """Proccess the Response object returned by the target.</br>
         Any treatment specific to an API response can be done here.</br>
-        For example you can extract from res.json only the data that matters for the request
-        and exclude the fields in common for every request of the API.
+        For example you can extract from res.json only the data that matters for the request</br>
+        and exclude the common fields of every request of the API.</br>
+        You can also raise an error if the response status is not the one expected
+        Note that only RequestError will trigger a request retry.
+        May be overriden by subclass.</br>
         """
+        return res
+
+    def _before_retry(self, request: Request, response: Response) -> bool:
+        """Function to execute before retrying a request due to a RequestError.</br>
+        This allow the exection of cleanup operations before a retry for example.</br>
+        Returns whether the request should be retried or not.</br>
+        May be overriden by subclass.
+        """
+        return True
+
+    def _execute_request_with_retries(
+        self, request: Request, _try: int = 0, _error: Exception | None = None
+    ) -> Response:
+        """Execute a fully prepared request and extract the Response object from the response.</br>
+        May be overriden by subclass.
+        """
+        # If there was an error and there was to many retries raise the error
+        if _error and _try > self.api_common_requests_fields.retries.max_retries:
+            raise _error
+        # If the request is a retry wait before executing it
+        if _try > 0:
+            sleep(self.api_common_requests_fields.retries.delay)
+            self.api_common_requests_fields.retries.update_delay()
+        try:
+            res = requests_request(**request.model_dump(mode="json", exclude_none=True))  # noqa: S113 False positive
+        except Exception as err:
+            # retry the request
+            return self._execute_request_with_retries(request, _try=_try + 1, _error=err)
+        try:
+            # Format
+            res = self._extract_res_model_from_api_response(res)
+        except RequestError as err:
+            # if the _before_retry allow the retry then retry the request
+            if self._before_retry(request, err.response):
+                return self._execute_request_with_retries(request, _try=_try + 1, _error=err)
+            # otherwise raise
+            raise
         return res
 
     def _extract_res_model_from_api_response(self, api_response: RequestsResponse) -> Response:
@@ -157,4 +203,28 @@ class APIConectorInterface:
             res["json"] = api_response.json()
         except Exception:
             res["text"] = api_response.text
-        return self._format_response(Response.model_validate(res))
+        return self._proccess_response(Response.model_validate(res))
+
+    @staticmethod
+    def _convert_request_args(
+        request_args: BaseModel | dict[str, Any] | list[BaseModel | dict[str, Any]] | None,
+    ) -> dict[str, Any]:
+        """Convert all the request args to a dict[str, Any]."""
+        if not request_args:
+            return {}
+        # list case
+        if isinstance(request_args, list):
+            res = {}
+            old_res_len = len(res)
+            for arg in request_args:
+                dumped = arg.model_dump(mode="json", by_alias=True) if isinstance(arg, BaseModel) else arg
+                dumped_len = len(dumped)
+                res.update(dumped)
+                if len(res) < old_res_len + dumped_len:
+                    # TODO replace with warning
+                    raise ValueError("Somme request arguments are overlapping.")
+            return res
+        # non list case
+        return (
+            request_args.model_dump(mode="json", by_alias=True) if isinstance(request_args, BaseModel) else request_args
+        )

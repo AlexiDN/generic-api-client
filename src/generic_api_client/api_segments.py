@@ -47,6 +47,8 @@ class APISegment:
     @staticmethod
     def _convert_result(result: object, return_type: BaseModel | list[BaseModel] | type) -> Any:
         """Convert a result to the return_type"""
+        if isinstance(result, return_type):
+            return result
         origin = get_origin(return_type)
         if origin is list:
             # Get the type inside list[...]
