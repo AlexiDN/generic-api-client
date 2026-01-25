@@ -3,17 +3,17 @@ packages = [{ include = "generic_api_client", from = "src" }]
 
 [project]
 name = "generic-api-client"
-version = "0.0.1"
+version = "0.0.2"
 readme = "README.md"
-description = "Interact with APIs through methods and pydantic models"
+description = "Interact with APIs through methods and Pydantic models."
 authors = [{name="Alexi Desvignes Nouvel"}]
 keywords = [ "open", "api","client","generic","rest" ]
 requires-python=">=3.10"
 dynamic=["dependencies"]
 
-# [project.urls]
-# repository = "https://github.com/AlexiDN/openstoreplugin"
-# documentation = "https://github.com/AlexiDN/openstoreplugin/wiki"
+[project.urls]
+repository = "https://github.com/AlexiDN/generic-api-client"
+documentation = "https://github.com/AlexiDN/generic-api-client"
 
 # Common dependencies
 [tool.poetry.dependencies]
@@ -29,7 +29,7 @@ urllib3 = "^2.6.3"
 
 
 [tool.poetry.group.lint.dependencies]
-ruff = "^0.11.9"
+ruff = "^0.14.14"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.4.1"

@@ -42,7 +42,9 @@ class TemplateService:
 
     @staticmethod
     def build_request_from_request_template(
-        request_template: RequestTemplate, base_request: Request, version: Version | None = None
+        request_template: RequestTemplate,
+        base_request: Request,
+        version: Version | None = None,
     ) -> Request:
         """Build the request from the request template and the base_request"""
         request_options = request_template.get_final_request_options(version)
