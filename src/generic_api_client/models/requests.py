@@ -2,6 +2,8 @@ from http import HTTPMethod, HTTPStatus
 from typing import Any
 from pydantic import AnyUrl, BaseModel
 
+from generic_api_client.utils import ResponseSource
+
 
 class Request(BaseModel):
     url: AnyUrl
@@ -9,14 +11,14 @@ class Request(BaseModel):
     headers: dict[str, Any]
     params: list[list[str, Any]] | None = None
     data: str | None = None
-    json: Any | None = None
+    body: Any | None = None
     cookies: dict[str, Any] | None = None
     timeout: int = 20
     verify: bool = True
 
     def update_url_with_uri(self, uri: str) -> None:
         """Update self.url by merging it with uri"""
-        self.url = AnyUrl(str(self.url) + uri)
+        self.url = AnyUrl(str(self.url).removesuffix("/") + uri)
 
     def update_method(self, method: HTTPMethod) -> None:
         """Update self.method"""
@@ -34,9 +36,9 @@ class Request(BaseModel):
         """Update self.data"""
         self.data = data
 
-    def update_json(self, json: dict[str, Any]) -> None:
-        """Update self.json by merging it with json"""
-        self.json = json if self.json is None else {**self.json, **json}
+    def update_body(self, json: dict[str, Any]) -> None:
+        """Update self.body by merging it with json"""
+        self.body = json if self.body is None else {**self.body, **json}
 
     def update_cookies(self, cookies: dict[str, Any]) -> None:
         """Update self.cookies by merging it with cookies"""
@@ -44,8 +46,9 @@ class Request(BaseModel):
 
 
 class Response(BaseModel):
+    source: ResponseSource = ResponseSource.API
     status_code: HTTPStatus
     headers: dict[str, Any]
     text: str | None = None
-    json: Any | None = None
+    body: Any | None = None
     cookies: dict[str, Any] | None = None

@@ -1,10 +1,6 @@
 # Changelog
 
-## [0.0.1] - 2025-09
+All notable changes to this project will be documented here.
 
-### Added*
-
-- DynamicFileProvider and StaticFileProvider to manage configurations from files.
-    - Support the following extensions: yaml/yml,toml and json.
-    - Support multiple files per Provider
-- ConFigueValidationModel to validate configurations from files using Pydantic Model validation
+## [1.0.0] - 2026-05-03
+- Added usage examples, documentation, working cache (local+redis), API versioning, and overrideable methods for customization.

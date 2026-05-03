@@ -1,18 +1,19 @@
 import hashlib
 import json
 from pathlib import Path
-from pydantic import BaseModel, SerializationInfo, field_serializer, model_validator, Field
+from typing import Any
+from pydantic import BaseModel, SerializationInfo, field_serializer, field_validator, Field
 
 from generic_api_client.models.authentication import Credentials, Token
 from generic_api_client.models.model_tree import ModelTree
 from generic_api_client.models.requests import Response
 from treelib import Node
-from generic_api_client.utils import get_current_time
+from generic_api_client.utils import JSONType, get_current_time
 
 
 class CacheResponse(BaseModel):
     res: Response = Field(description="API response")
-    expiration_time: int = Field(get_current_time(), description="Expiration time of the entry")
+    expiration_time: int = Field(default=get_current_time() + 60, description="Expiration time of the entry")
 
 
 class CacheTree(ModelTree):
@@ -25,14 +26,15 @@ class CacheTree(ModelTree):
     def set_response(self, path: Path, res: CacheResponse) -> None:
         """Add a Cache response to the tree using its path."""
         key = self._key_from_path(path)
-        # set response if node already exist
         node = self.get_node(key)
         if node:
+            # Set response if node already exist
             node.data = res
-        # Create the parent branch if node does not exist
-        parent = self._create_parent_branch_from_path(path)
-        # create the node
-        self.create_node(key, key, parent=parent, data=res)
+        else:
+            # Create the parent branch if node does not exist
+            parent = self._create_parent_branch_from_path(path)
+            # create the node
+            self.create_node(key, key, parent=parent, data=res)
 
     def get_response(self, path: Path) -> CacheResponse | None:
         """Get a CacheResponse from a path.
@@ -48,7 +50,7 @@ class CacheTree(ModelTree):
         return None
 
     def delete_response(self, path: Path) -> None:
-        """Delete a response from a Path"""
+        """Delete a response from a Path and clear the associated subtree if there is one"""
         self.remove_node(self._key_from_path(path))
 
     def _create_parent_branch_from_path(self, path: Path) -> Node:
@@ -88,41 +90,41 @@ class TargetCache(BaseModel, arbitrary_types_allowed=True):
             self.auth_data = None
         self.responses_tree.clear()
 
-    def get_response(self, template_path: Path, request_args: dict) -> CacheResponse:
+    def get_response(self, template_path: Path, request_args: JSONType | None) -> CacheResponse:
         """Retrieve a cached response from the response tree"""
-        self.responses_tree.get_response(self._path_from_request_infos(template_path, request_args))
+        return self.responses_tree.get_response(self._path_from_request_infos(template_path, request_args))
 
-    def delete_response(self, template_path: Path, request_args: dict) -> None:
+    def delete_response(self, template_path: Path, request_args: JSONType | None) -> None:
         """Delete a cached response from the response tree"""
         self.responses_tree.delete_response(self._path_from_request_infos(template_path, request_args))
 
-    def set_response(self, template_path: Path, request_args: dict, response: CacheResponse) -> None:
+    def set_response(self, template_path: Path, request_args: JSONType | None, response: CacheResponse) -> None:
         """Add a response into the response tree"""
         self.responses_tree.set_response(self._path_from_request_infos(template_path, request_args), response)
 
     @staticmethod
-    def _path_from_request_infos(template_path: Path, request_args: dict) -> Path:
+    def _path_from_request_infos(template_path: Path, request_args: JSONType | None) -> Path:
         """Create a unique cache path from request path and args"""
+        if not request_args:
+            return template_path.with_suffix("")
         return template_path.with_suffix("").joinpath(hashlib.sha256(json.dumps(request_args).encode()).hexdigest())
 
     # Pydantic serializers and validators
 
     @field_serializer("responses_tree", when_used="json")
     @staticmethod
-    def serialize_responses_tree(responses_tree: ModelTree, _info: SerializationInfo) -> dict:
+    def serialize_responses_tree(responses_tree: CacheTree, _info: SerializationInfo) -> dict:
         """Serialize 'responses_tree' to dict"""
-        return responses_tree.to_json(with_data=True)
+        return responses_tree.to_json() if responses_tree.root is not None else {}
 
-    @model_validator(mode="before")
+    @field_validator("responses_tree", mode="before")
     @classmethod
-    def create_responses_tree(cls, data: dict) -> dict:
-        """Create the responses_tree from a dict"""
-        if not data.get("responses_tree"):
-            raise ValueError("Missing field 'responses_tree'.")
-        # Create Tree instance from data.responses_tree
-        try:
-            data["responses_tree"] = ModelTree.from_json(data.get("responses_tree"), node_data_model=CacheResponse)
-        except Exception as err:
-            msg = f"Failed to create 'responses_tree'. Caused by: {err}"
-            raise ValueError(msg) from err
-        return data
+    def responses_tree_validator(cls, responses_tree: Any) -> CacheTree:
+        """Validate 'responses_tree' field of model and parse it from its json representation if neccessary"""
+        if isinstance(responses_tree, CacheTree):
+            return responses_tree
+        if not isinstance(responses_tree, dict):
+            raise TypeError("Field 'responses_tree' must be a dict or CacheTree.")
+        if responses_tree == {}:
+            return CacheTree()
+        return CacheTree.from_json(responses_tree, node_data_model=CacheResponse)

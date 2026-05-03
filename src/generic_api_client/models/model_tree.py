@@ -40,7 +40,7 @@ class ModelTree(Tree):
             msg = f"Tree have one and only one root. {len(json.keys())} were provided."
             raise ValueError(msg)
         # Create empty tree if needed
-        tree = base_tree or ModelTree()
+        tree = base_tree or cls()
         # Create node
         node_id = next(iter(json.keys()))
         node_children, node_data = json.get(node_id).get("children", []), json.get(node_id).get("data")
