@@ -1,0 +1,9 @@
+{
+  "general_options": {
+    "endpoint": "/ocs/v2.php/apps/user_ldap/api/v1/config/{{CONFIG_ID}}",
+    "method": "PUT",
+    "body": {
+      "configData": {{ CONFIG_DATA | tojson }}
+    }
+  }
+}

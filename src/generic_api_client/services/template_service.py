@@ -38,7 +38,7 @@ class TemplateService:
     def list_templates(self, sub_dir: str = "") -> list[Path]:
         """List all the templates available for a subdir of the template_root_dir."""
         search_dir = self.templates_root_dir.joinpath(sub_dir)
-        return list(search_dir.glob("**.json.j2"))
+        return list(search_dir.glob(f"**{FILE_EXTENSION}"))
 
     @staticmethod
     def build_request_from_request_template(
@@ -57,6 +57,6 @@ class TemplateService:
             if isinstance(request_options.body, str):
                 request.update_data(request_options.body)
             else:
-                request.update_json(request_options.body)
+                request.update_body(request_options.body)
         request.update_cookies(request_options.cookies or {})
         return request

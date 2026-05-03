@@ -22,7 +22,7 @@ class APICommonRequestFields(BaseModel):
     headers: dict[str, Any] | None = Field(None, description="Default headers for API requests")
     cookies: dict[str, Any] | None = Field(None, description="Default cookies for API requests")
     data: str | None = Field(None, description="Default data for API requests")
-    json: Any | None = Field(None, description="Default json for API requests")
+    body: Any | None = Field(None, description="Default json for API requests")
     requires_login: bool = Field(False, description="Either the API requires a login")
     requires_version: bool = Field(False, description="Either the API requires to know the target version")
     timeout: int = Field(20, description="The API requests timeout in seconds")

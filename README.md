@@ -1,33 +1,51 @@
 # Generic API Client
 
-Interact with APIs through methods and pydantic models.
+Interact with APIs through methods and Pydantic models.
 
 ## Features
 
 - Interact with an API through Pydantic models and python methods:
-    - Input and Ouptut of each endpoint can be described by a Pydantic model
-    - Each endpoint can be associated to a python method
-    - Allow developpers to use complex APIs with the static evaluation of the code preformed by IDEs
+  - Input and output of each endpoint can be described by a Pydantic model
+  - Each endpoint can be associated to a python method
+  - Allow developers to use complex APIs with the static evaluation of the code performed by IDEs
 - Comprehensive API collections using Jinja templates
-- Handle API versions via template and Pydantic Model (Comming soon)
-- Cache built to handle write and read requests (Comming soon)
+- Handle API versions via template and Pydantic Model
+- Cache built to handle write and read requests
 
 ## Installation
 
 ```bash
 pip install generic-api-client
 ```
+
 ## Usage
 
-See our [wiki](https://github.com/AlexiDN/generic-api-client/wiki) if you need more details about to setup your client.
+See our [wiki](https://github.com/AlexiDN/generic-api-client/wiki) or the new **docs** directory for detailed guidance on creating an `APIClient`, defining `Segments`, and building custom `APIConnectors`.
 
-An usage example can be found [here](https://github.com/AlexiDN/openstore_nextcloud_plugin/tree/dev/src/openstore_nextcloud_plugin/api).
+## Examples
 
-## License 
+The repository includes an `examples/` directory with working examples, such as the `nextcloud_api` demo. These examples demonstrate how to use the library to interact with the Nextcloud API.
+
+## Documentation
+
+A dedicated `docs/` directory contains markdown files that serve as a lightweight wiki, covering:
+
+- Overview of the library
+- How to instantiate an `APIClient`
+- Defining custom `Segments`
+- Creating `APIConnectors`
+- Using the Nextcloud example
+
+## License
 
 The project is released under the MIT License.
 
+## Acknowledgements
+
+This project was built with the help of Claude Code and local Ollama AI assistants. They were used mainly for documentation so keep in mind that even if it has been reviewed it may contains errors.
+
+
 ## Project Status
 
-> **NOTE** <br>
+> **NOTE**
 > The project is currently in development phase. If you have any remark or question feel free to open an Issue
