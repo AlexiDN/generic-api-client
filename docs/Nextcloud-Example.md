@@ -44,6 +44,7 @@ class RequestOptions(BaseModel):
     cookies: dict[str, Any] | None = None
     body: dict | str | None = None
 
+
 class RequestTemplate(BaseModel):
     requires_auth: bool = Field(True, description="Either the request requires authentication or not.")
     requires_version: bool = Field(False, description="Either the request requires API version or not.")
@@ -79,6 +80,7 @@ from generic_api_client.api_connector_interface import APIConectorInterface
 from generic_api_client.services.template_service import TemplateService
 from generic_api_client.models.api import APICommonRequestFields
 
+
 class NextcloudConnector(APIConectorInterface):
     api_common_requests_fields = APICommonRequestFields(
         root_url="/ocs/v2.php",
@@ -106,9 +108,11 @@ Create a subclass of :class:`generic_api_client.api_segments.APIAggregate` that 
 from generic_api_client.api_segments import APIAggregate, APISegment
 from .api_connector import NextcloudConnector
 
+
 class GroupsSegment(APISegment):
     # you can add custom methods here
     pass
+
 
 class NextcloudAPI(APIAggregate):
     connector: NextcloudConnector
@@ -120,7 +124,9 @@ In a segment class you add public methods that wrap :meth:`_execute_request`. Th
 
 ```python
 class GroupsSegment(APISegment):
-    def list(self, search: str | None = None, limit: int | None = None, offset: int | None = None) -> GroupsListResponse:
+    def list(
+        self, search: str | None = None, limit: int | None = None, offset: int | None = None
+    ) -> GroupsListResponse:
         args = {
             "SEARCH": search,
             "LIMIT": limit,
@@ -147,18 +153,22 @@ Example – the Nextcloud *apps* endpoint:
 from pydantic import BaseModel
 from generic_api_client.models.responses import CanonicalModel, VersionnedModel
 
+
 # Canonical model – what the public API exposes
 class NextCloudAppsList(CanonicalModel):
     apps: list[str]
+
 
 # Version‑specific models – one per supported API version
 class NextCloudAppsList_1(VersionnedModel):
     __version__ = Version.parse("32")
     apps: list[str]
 
+
 class NextCloudAppsList_2(VersionnedModel):
     __version__ = Version.parse("10")
     apps: list[str]
+
 
 # Register the version‑specific models
 NextCloudAppsList._versionned_models = [NextCloudAppsList_1, NextCloudAppsList_2]
@@ -181,7 +191,6 @@ Finally create a concrete client that subclasses :class:`generic_api_client.clie
 ```python
 from generic_api_client.client_interface import ClientInterface
 from .segments import NextcloudAPI
-
 ```
 
 Now you can use the client like:
@@ -201,8 +210,7 @@ The `ClientInterface` constructor accepts `cache_ttl_seconds` and an optional `r
 ```python
 # ClientInterface constructor
 client = ClientInterface(cache_ttl_seconds=60)  # in‑memory cache
-client = ClientInterface(cache_ttl_seconds=60,
-                         redis_client=redis.Redis(host="localhost", port=6379))  # Redis cache
+client = ClientInterface(cache_ttl_seconds=60, redis_client=redis.Redis(host="localhost", port=6379))  # Redis cache
 ```
 
 ### How to enable Redis in the example
@@ -225,9 +233,7 @@ from examples.nextcloud_api.api.segments.apps.apps import NextCloudApps
 
 # Instantiate the client and set target
 client = NextCloudClient(cache_ttl_seconds=60)
-client.set_target(Target(url="https://nextcloud.example.com",
-                        auth_data=Token("user", "pass")),
-                extract_version=True)
+client.set_target(Target(url="https://nextcloud.example.com", auth_data=Token("user", "pass")), extract_version=True)
 
 # Call the method
 installed = client.segments.apps.list_installed_apps()

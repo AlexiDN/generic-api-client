@@ -32,9 +32,11 @@ from generic_api_client.client_interface import ClientInterface
 from generic_api_client.services.template_service import TemplateService
 from generic_api_client.models.target import Target
 
+
 # Create a concrete client by inheriting ClientInterface
 class MyClient(ClientInterface):
     segments: MySegments  # type: ignore
+
 
 # Instantiate the client
 client = MyClient()
@@ -49,6 +51,7 @@ Segments are subclasses of `APISegment` that expose typed methods.  Each method 
 
 ```python
 from generic_api_client.api_segments import APISegment
+
 
 class UsersSegment(APISegment):
     def get_user(self, user_id: str) -> UserModel:  # type: ignore[override]
@@ -65,6 +68,7 @@ An `APIConectorInterface` implements the low‑level HTTP plumbing and any custo
 from generic_api_client.api_connector_interface import APIConectorInterface
 from generic_api_client.services.template_service import TemplateService
 from pathlib import Path
+
 
 class MyConnector(APIConectorInterface):
     api_common_requests_fields = ...  # fill in defaults
