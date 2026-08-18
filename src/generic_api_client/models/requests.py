@@ -1,6 +1,6 @@
 from http import HTTPMethod, HTTPStatus
 from typing import Any
-from pydantic import AnyUrl, BaseModel
+from pydantic import AnyUrl, BaseModel, Field
 
 from generic_api_client.utils import ResponseSource
 
@@ -11,7 +11,7 @@ class Request(BaseModel):
     headers: dict[str, Any]
     params: list[list[str, Any]] | None = None
     data: str | None = None
-    body: Any | None = None
+    body: Any | None = Field(None, alias="json")
     cookies: dict[str, Any] | None = None
     timeout: int = 20
     verify: bool = True

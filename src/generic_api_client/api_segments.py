@@ -58,6 +58,7 @@ class APISegment:
         response_processor: Callable[[Self, Response], Response] | None = None,
         allow_private: bool = False,
         login_function: Callable[[Self], Credentials | Token] | None = None,
+        use_cache: bool = True,
     ) -> Response:
         """Execute a request base on a template name and request args.
         A response proccessor function can be given to ovveride the connector _proccess_response method.
@@ -80,6 +81,7 @@ class APISegment:
                 request_args,
                 response_processor=response_processor,
                 target_override=target if target != self.connector.target else None,
+                use_cache=use_cache,
             )
         except RequestError as err:
             # If a login func is defined and the error is HTTPStatus.UNAUTHORIZED

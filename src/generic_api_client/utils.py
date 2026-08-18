@@ -1,7 +1,7 @@
 from enum import Enum
 import operator
 import time
-from pydantic import BaseModel, TypeAdapter
+from pydantic import BaseModel
 from semver import Version
 import sys
 import types
@@ -31,14 +31,14 @@ def to_json(
 ) -> JSONType | None:
     """Serialize an object to a JSONType"""
     if obj is None:
-        return obj
+        return None
     if isinstance(obj, BaseModel):
-        obj = obj.model_dump(mode="python")
-
-    return TypeAdapter(JSONType).dump_python(
-        obj,
-        mode="json",
-    )
+        return obj.model_dump(mode="json")
+    if isinstance(obj, list):
+        return [to_json(item) for item in obj]
+    if isinstance(obj, dict):
+        return {key: to_json(value) for key, value in obj.items()}
+    return obj
 
 
 def check_constraint(version: Version, constraint: str) -> bool:
