@@ -30,7 +30,7 @@ expiring-dict="^1.1.2"
 
 
 [tool.poetry.group.lint.dependencies]
-ruff = "^0.14.14"
+ruff = "*"
 
 [tool.poetry.group.test.dependencies]
 pytest = "^8.4.1"
