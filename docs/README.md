@@ -32,9 +32,11 @@ from generic_api_client.client_interface import ClientInterface
 from generic_api_client.services.template_service import TemplateService
 from generic_api_client.models.target import Target
 
+
 # Create a concrete client by inheriting ClientInterface
 class MyClient(ClientInterface):
     segments: MySegments  # type: ignore
+
 
 # Instantiate the client
 client = MyClient()
@@ -50,23 +52,25 @@ Segments are subclasses of `APISegment` that expose typed methods.  Each method 
 ```python
 from generic_api_client.api_segments import APISegment
 
+
 class UsersSegment(APISegment):
     def get_user(self, user_id: str) -> UserModel:  # type: ignore[override]
-        return self.execute_request("users/get", {"user_id": user_id})
+        return self._execute_request("users/get", {"user_id": user_id})
 ```
 
-The string argument to `execute_request` refers to a template name under the connector’s `templates_dir`.
+The string argument to `_execute_request` refers to a template name under the connector’s `templates_dir`.
 
 ## Building APIConnectors
 
-An `APIConnectorInterface` implements the low‑level HTTP plumbing and any custom request/response logic.
+An `APIConectorInterface` implements the low‑level HTTP plumbing and any custom request/response logic.
 
 ```python
-from generic_api_client.api_connector_interface import APIConnectorInterface
+from generic_api_client.api_connector_interface import APIConectorInterface
 from generic_api_client.services.template_service import TemplateService
 from pathlib import Path
 
-class MyConnector(APIConnectorInterface):
+
+class MyConnector(APIConectorInterface):
     api_common_requests_fields = ...  # fill in defaults
     templates_dir = Path(__file__).parent / "templates"
     template_service = TemplateService(templates_dir)
@@ -80,19 +84,13 @@ Once you have a connector, you can plug it into the client and use the segments.
 
 The `examples/nextcloud_api` folder contains a fully‑worked client that uses the library to call Nextcloud endpoints.  Key files:
 
-- `api_connector.py` – concrete connector with Nextcloud‑specific headers and auth.
-- `client.py` – client that aggregates the Nextcloud segments.
-- `segments/` – segment modules such as `apps.py` and `groups.py`.
-- `templates/` – Jinja2 JSON templates for each endpoint.
+- `api/api_connector.py` – concrete connector with Nextcloud‑specific headers and auth.
+- `api/client.py` – client that aggregates the Nextcloud segments.
+- `api/segments/` – segment modules such as `apps/apps.py` and `groups/groups.py`.
+- `api/templates/` – Jinja2 JSON templates for each endpoint.
+- `demo.py` – manual script that exercises the client against a real Nextcloud server.
 
-Run the example:
-
-```bash
-poetry install
-python examples/nextcloud_api/client.py
-```
-
-This will instantiate the client, set a target URL, and demonstrate a few API calls.
+See the [Nextcloud API Example](Nextcloud-Example) walkthrough for a full explanation.
 
 ## Contributing
 

@@ -146,6 +146,8 @@ class APIConectorInterface:
                 and not self.api_auth_data
             ):
                 self.login()
+                # Inject auth data
+                prepared_request = self._inject_auth(prepared_request)
             # Else if request requires auth
             elif request_template.requires_auth:
                 # Verify target has auth
@@ -153,9 +155,8 @@ class APIConectorInterface:
                     msg = f"Request {template_path} requires authentication to be provided with the target."
                     raise RuntimeError(msg)
                 self.api_auth_data = self.target.auth_data
-
-            # Inject auth data
-            prepared_request = self._inject_auth(prepared_request)
+                # Inject auth data
+                prepared_request = self._inject_auth(prepared_request)
 
             # Inject version
             if self.api_common_requests_fields.requires_version and request_template.requires_version:
@@ -258,7 +259,7 @@ class APIConectorInterface:
             sleep(self.api_common_requests_fields.retries.delay)
             self.api_common_requests_fields.retries.update_delay()
         try:
-            res = requests_request(**request.model_dump(mode="json", exclude_none=True))  # noqa: S113 False positive
+            res = requests_request(**request.model_dump(mode="json", exclude_none=True, by_alias=True))  # noqa: S113 False positive
         except Exception as err:
             # retry the request
             return self._execute_request_with_retries(request, _try=_try + 1, _error=err)
