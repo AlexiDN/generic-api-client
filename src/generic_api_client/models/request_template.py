@@ -40,10 +40,10 @@ class RequestOptions(BaseModel):
     def clear_empty_basic_body_strings(self) -> None:
         """Clear empty strings of the body. Does not recurse on nested values"""
         if self.body and isinstance(self.body, dict):
-            for k, value in self.body.items():
-                if value is None or value == "None":
+            for k in list(self.body):
+                if self.body[k] is None or self.body[k] == "None":
                     self.body.pop(k)
-        # If body is str and empty delete it
+        # If body is str and "None" delete it
         if isinstance(self.body, str) and self.body == "None":
             self.body = None
 
